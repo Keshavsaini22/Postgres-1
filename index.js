@@ -33,8 +33,33 @@ app.get('/users/:uuid', async (req, res) => {
     const uuid = req.params.uuid
     try {
         const user = await User.findOne({
-            where: { uuid }
+            where: { uuid },
+            include: 'posts'
         })
+        return res.json(user)
+    } catch (e) {
+        return res.status(500).json(e)
+    }
+})
+
+app.delete('/users/:uuid', async (req, res) => {
+    const uuid = req.params.uuid
+    try {
+        const user = await User.findOne({ where: { uuid }, })
+        await user.destroy()
+        return res.json({ message: 'User deleted' })
+    } catch (e) {
+        return res.status(500).json(e)
+    }
+})
+
+app.put('/users/:uuid', async (req, res) => {
+    const uuid = req.params.uuid
+    const { name } = req.body
+    try {
+        const user = await User.findOne({ where: { uuid }, })
+        user.name = name
+        await user.save()
         return res.json(user)
     } catch (e) {
         return res.status(500).json(e)
@@ -52,6 +77,19 @@ app.post('/posts', async (req, res) => {
 
         const post = await Posts.create({ body, userId: user.id })
         return res.json(post)
+    } catch (e) {
+        return res.status(500).json(e)
+    }
+})
+
+app.get('/posts', async (req, res) => {
+    try {
+        // const posts = await Posts.findAll({ include: [User] })
+        // const posts = await Posts.findAll({ include: [{ model: User, as: 'user' }] })
+        // const posts = await Posts.findAll({ include: ['user'] })
+        const posts = await Posts.findAll({ include: 'user' })
+
+        return res.json(posts)
     } catch (e) {
         return res.status(500).json(e)
     }
